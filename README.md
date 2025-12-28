@@ -1,140 +1,134 @@
-# Speaker Diarization System
+# Speaker Identification System
 
-A Python-based speaker diarization system that identifies who is speaking in an audio file. Speakers are automatically labeled as "Person 1", "Person 2", etc.
+A deep learning-based speaker identification system that can identify speakers in audio files by comparing them against reference voice samples. Built with Resemblyzer and Streamlit.
 
 ## Features
 
-- **Speaker Diarization**: Automatically segments audio by speaker using Pyannote models
-- **Web UI**: Beautiful Streamlit interface for easy audio upload and visualization
-- **Interactive Visualizations**: Timeline charts and pie charts showing speaking time
-- **Export Options**: Download results as JSON or CSV
-- **Python 3.10 Compatible**: Optimized for PyTorch and Pyannote compatibility
-
-## Requirements
-
-- Python 3.10
-- CUDA-capable GPU (optional, but recommended for faster processing)
+- 🎤 **Speaker Identification**: Identify speakers in audio files using pretrained deep learning models
+- 📊 **Similarity Scores**: Get matching percentages for each detected speaker
+- 🎯 **Multiple Format Support**: Supports MP3, WAV, M4A, MP4, FLAC, OGG audio formats
+- 📈 **Visual Analytics**: Interactive charts and progress bars showing similarity scores
+- ⚙️ **Configurable**: Adjustable segment duration, overlap, and similarity thresholds
 
 ## Installation
 
-### 1. Install Python 3.10
+1. **Install Python dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-If you don't have Python 3.10 installed:
-- Download from https://www.python.org/downloads/
-- Make sure to check "Add Python to PATH" during installation
+2. **Ensure you have FFmpeg installed** (required for audio format conversion):
+   - Windows: Download from [FFmpeg website](https://ffmpeg.org/download.html) or use `choco install ffmpeg`
+   - Mac: `brew install ffmpeg`
+   - Linux: `sudo apt-get install ffmpeg`
 
-### 2. Set Up Environment
+## Project Structure
 
-**Windows:**
-```bash
-setup_environment.bat
 ```
-
-**Linux/Mac:**
-```bash
-chmod +x setup_environment.sh
-./setup_environment.sh
+speaker_identification/
+├── voice_samples/          # Reference voice samples (organized by speaker name)
+│   ├── aman/
+│   ├── harsh/
+│   ├── jony/
+│   └── ...
+├── speaker_identifier.py   # Core speaker identification module
+├── app.py                 # Streamlit web application
+├── requirements.txt       # Python dependencies
+└── README.md             # This file
 ```
-
-This will:
-- Create a Python 3.10 virtual environment
-- Install all required packages
-- Set up the environment for you
-
-### 3. Configure Hugging Face Token
-
-The `.env` file is already created with your token. If you need to update it:
-
-```env
-HF_TOKEN=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
-```
-
-### 4. Accept Model Terms
-
-Before first use, accept the terms of use for the pretrained models:
-- Visit https://huggingface.co/pyannote/speaker-diarization-3.1 and accept the terms
-- Visit https://huggingface.co/pyannote/embedding and accept the terms
 
 ## Usage
 
-### Activate Virtual Environment
+### 1. Prepare Reference Voice Samples
 
-**Windows:**
-```bash
-venv\Scripts\activate
+Organize your reference voice samples in the `voice_samples` directory:
+- Each speaker should have their own folder
+- Place multiple audio samples per speaker for better accuracy
+- Supported formats: MP3, WAV, M4A, MP4, FLAC, OGG
+
+Example structure:
+```
+voice_samples/
+├── aman/
+│   ├── sample1.mp3
+│   ├── sample2.mp3
+│   └── ...
+├── harsh/
+│   └── sample1.mp3
+└── ...
 ```
 
-**Linux/Mac:**
-```bash
-source venv/bin/activate
-```
-
-### Run the Web UI
+### 2. Run the Streamlit App
 
 ```bash
 streamlit run app.py
 ```
 
-The app will automatically open in your default web browser at `http://localhost:8501`
+The app will open in your browser at `http://localhost:8501`
 
-## How to Use the UI
+### 3. Using the App
 
-1. **Upload Audio**: Click "Browse files" and select an audio file (WAV, MP3, FLAC, M4A, OGG)
-2. **Configure Settings** (Optional): Set minimum/maximum speaker counts in the sidebar
-3. **Start Diarization**: Click "🚀 Start Diarization" button
-4. **View Results**: 
-   - See timeline visualization
-   - Check speaking time distribution
-   - Review detailed segment information
-   - Download results as JSON or CSV
+1. **Load Reference Voices**: Click "Load Reference Voices" in the sidebar to load all voice samples
+2. **Upload Audio**: Upload an audio file containing voices to identify
+3. **Adjust Settings** (optional):
+   - Segment Duration: How long each analysis segment should be (2-10 seconds)
+   - Segment Overlap: Overlap between segments for better coverage
+   - Similarity Threshold: Minimum percentage to consider a match
+4. **View Results**: See detected speakers with similarity percentages
 
-## Supported Audio Formats
+## How It Works
 
-- WAV
-- MP3
-- FLAC
-- M4A
-- OGG
+1. **Reference Voice Loading**: 
+   - Loads all audio files from each speaker's folder
+   - Extracts speaker embeddings using Resemblyzer's pretrained model
+   - Averages embeddings from multiple samples per speaker for better representation
+
+2. **Audio Analysis**:
+   - Segments the uploaded audio into smaller chunks
+   - Extracts embeddings from each segment
+   - Compares each segment's embedding with all reference speaker embeddings
+
+3. **Similarity Calculation**:
+   - Uses cosine similarity to compare embeddings
+   - Normalizes scores to 0-100% range
+   - Aggregates results across all segments
+
+4. **Results Display**:
+   - Shows average and maximum similarity for each speaker
+   - Displays visualizations and progress bars
+   - Filters results based on similarity threshold
+
+## Technical Details
+
+- **Model**: Resemblyzer (pretrained speaker verification model)
+- **Embedding Dimension**: 256-dimensional vectors
+- **Sample Rate**: 16kHz (automatically resampled)
+- **Minimum Segment Length**: 1 second
 
 ## Troubleshooting
 
-### Model Loading Issues
+### Audio Loading Issues
+- Ensure FFmpeg is installed for format conversion
+- Check that audio files are not corrupted
+- Try converting audio to WAV format manually
 
-If you encounter authentication errors:
-1. Make sure you've accepted the terms of use on Hugging Face
-2. Verify your Hugging Face token is correct in the `.env` file
-3. Check that the `.env` file is in the same directory as the scripts
+### Low Similarity Scores
+- Add more reference samples per speaker (5+ samples recommended)
+- Ensure reference samples are clear and contain speech
+- Try adjusting the similarity threshold
 
-### GPU Not Detected
+### Performance Issues
+- Reduce segment duration for faster processing
+- Use shorter audio files for testing
+- Close other applications to free up memory
 
-The system will automatically use CPU if GPU is not available. Processing will be slower but will still work.
+## Requirements
 
-### Python Version Issues
-
-Make sure you're using Python 3.10. Check your version:
-```bash
-python --version
-```
-
-If it's not 3.10, reinstall Python 3.10 and recreate the virtual environment.
-
-## Project Structure
-
-```
-speech diarization/
-├── .env                    # Environment variables (HF token)
-├── app.py                 # Streamlit web UI
-├── diarization_utils.py   # Diarization utilities
-├── speaker_db.py          # Speaker database manager
-├── requirements.txt       # Python dependencies
-├── setup_environment.bat  # Windows setup script
-├── setup_environment.sh   # Linux/Mac setup script
-└── README.md             # This file
-```
+- Python 3.8+
+- FFmpeg (for audio format conversion)
+- See `requirements.txt` for Python packages
 
 ## License
 
-This project uses pretrained models from Hugging Face. Please review and comply with their respective licenses:
-- pyannote/speaker-diarization-3.1
-- pyannote/embedding
+This project uses Resemblyzer, which is open source. Please refer to their license for usage terms.
 
