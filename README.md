@@ -1,10 +1,11 @@
 # Speaker Identification System
 
-A deep learning-based speaker identification system that can identify speakers in audio files by comparing them against reference voice samples. Built with Resemblyzer and Streamlit.
+A deep learning-based speaker identification system that can identify speakers in audio files by comparing them against reference voice samples. Built with Resemblyzer, Pyannote Audio (Community 3.1), and Streamlit.
 
 ## Features
 
 - 🎤 **Speaker Identification**: Identify speakers in audio files using pretrained deep learning models
+- 🤖 **Multiple Models**: Choose between Resemblyzer or Pyannote Community 3.1 model
 - 📊 **Similarity Scores**: Get matching percentages for each detected speaker
 - 🎯 **Multiple Format Support**: Supports MP3, WAV, M4A, MP4, FLAC, OGG audio formats
 - 📈 **Visual Analytics**: Interactive charts and progress bars showing similarity scores
@@ -21,6 +22,11 @@ A deep learning-based speaker identification system that can identify speakers i
    - Windows: Download from [FFmpeg website](https://ffmpeg.org/download.html) or use `choco install ffmpeg`
    - Mac: `brew install ffmpeg`
    - Linux: `sudo apt-get install ffmpeg`
+
+3. **For Pyannote Model (Optional):**
+   - See [PYANNOTE_SETUP.md](PYANNOTE_SETUP.md) for detailed setup instructions
+   - Requires Hugging Face account and token
+   - Accept user agreement at [pyannote/embedding](https://huggingface.co/pyannote/embedding)
 
 ## Project Structure
 
@@ -68,24 +74,26 @@ The app will open in your browser at `http://localhost:8501`
 
 ### 3. Using the App
 
-1. **Load Reference Voices**: Click "Load Reference Voices" in the sidebar to load all voice samples
-2. **Upload Audio**: Upload an audio file containing voices to identify
-3. **Adjust Settings** (optional):
+1. **Select Model**: Choose between "resemblyzer" or "pyannote" in the sidebar
+2. **Load Reference Voices**: Click "Load Reference Voices" in the sidebar to load all voice samples
+3. **Upload Audio**: Upload an audio file containing voices to identify
+4. **Adjust Settings** (optional):
+   - Model Type: Choose between Resemblyzer or Pyannote
    - Segment Duration: How long each analysis segment should be (2-10 seconds)
    - Segment Overlap: Overlap between segments for better coverage
    - Similarity Threshold: Minimum percentage to consider a match
-4. **View Results**: See detected speakers with similarity percentages
+5. **View Results**: See detected speakers with similarity percentages
 
 ## How It Works
 
 1. **Reference Voice Loading**: 
    - Loads all audio files from each speaker's folder
-   - Extracts speaker embeddings using Resemblyzer's pretrained model
+   - Extracts speaker embeddings using the selected model (Resemblyzer or Pyannote)
    - Averages embeddings from multiple samples per speaker for better representation
 
 2. **Audio Analysis**:
    - Segments the uploaded audio into smaller chunks
-   - Extracts embeddings from each segment
+   - Extracts embeddings from each segment using the selected model
    - Compares each segment's embedding with all reference speaker embeddings
 
 3. **Similarity Calculation**:
@@ -100,10 +108,19 @@ The app will open in your browser at `http://localhost:8501`
 
 ## Technical Details
 
+### Resemblyzer Model (Default)
 - **Model**: Resemblyzer (pretrained speaker verification model)
 - **Embedding Dimension**: 256-dimensional vectors
 - **Sample Rate**: 16kHz (automatically resampled)
 - **Minimum Segment Length**: 1 second
+- **Advantages**: Fast, no authentication required
+
+### Pyannote Community 3.1 Model
+- **Model**: Pyannote embedding model (state-of-the-art)
+- **Embedding Dimension**: 512-dimensional vectors
+- **Sample Rate**: 16kHz (automatically resampled)
+- **Advantages**: Higher accuracy, better noise handling
+- **Requirements**: Hugging Face authentication
 
 ## Troubleshooting
 
@@ -130,5 +147,9 @@ The app will open in your browser at `http://localhost:8501`
 
 ## License
 
-This project uses Resemblyzer, which is open source. Please refer to their license for usage terms.
+This project uses:
+- **Resemblyzer**: Open source speaker verification model
+- **Pyannote Audio**: MIT License (requires accepting user agreement for model usage)
+
+Please refer to their respective licenses for usage terms.
 

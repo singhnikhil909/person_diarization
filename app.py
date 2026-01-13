@@ -45,6 +45,8 @@ if 'identifier' not in st.session_state:
     st.session_state.identifier = None
 if 'reference_voices_loaded' not in st.session_state:
     st.session_state.reference_voices_loaded = False
+if 'model_type' not in st.session_state:
+    st.session_state.model_type = 'resemblyzer'
 
 # Header
 st.markdown('<h1 class="main-header">🎤 Speaker Identification System</h1>', unsafe_allow_html=True)
@@ -53,6 +55,20 @@ st.markdown("---")
 # Sidebar for configuration
 with st.sidebar:
     st.header("⚙️ Configuration")
+    
+    # Model selection
+    model_type = st.selectbox(
+        "Model Type",
+        options=["resemblyzer", "pyannote"],
+        index=0,
+        help="Choose between Resemblyzer or Pyannote Community 3.1 model"
+    )
+    
+    if model_type == "pyannote":
+        st.info("📝 **Pyannote Setup:**\n\n"
+                "1. Accept user agreement at [pyannote/embedding](https://huggingface.co/pyannote/embedding)\n"
+                "2. Set HF_TOKEN environment variable with your Hugging Face token\n"
+                "3. Or login via: `huggingface-cli login`")
     
     voice_samples_dir = st.text_input(
         "Voice Samples Directory",
@@ -87,17 +103,21 @@ with st.sidebar:
     )
     
     if st.button("🔄 Load Reference Voices", type="primary"):
-        with st.spinner("Loading reference voices..."):
+        with st.spinner(f"Loading reference voices with {model_type} model..."):
             try:
-                identifier = SpeakerIdentifier(voice_samples_dir)
+                identifier = SpeakerIdentifier(voice_samples_dir, model_type=model_type)
                 identifier.load_reference_voices()
                 st.session_state.identifier = identifier
                 st.session_state.reference_voices_loaded = True
-                st.success(f"✅ Loaded {len(identifier.speaker_names)} speakers!")
+                st.session_state.model_type = model_type
+                st.success(f"✅ Loaded {len(identifier.speaker_names)} speakers with {model_type.upper()} model!")
                 st.json(identifier.speaker_names)
             except Exception as e:
                 st.error(f"Error loading reference voices: {e}")
                 st.session_state.reference_voices_loaded = False
+                import traceback
+                with st.expander("Show error details"):
+                    st.code(traceback.format_exc())
 
 # Main content area
 col1, col2 = st.columns([2, 1])
@@ -114,7 +134,9 @@ with col1:
 with col2:
     st.header("📊 Reference Speakers")
     if st.session_state.reference_voices_loaded and st.session_state.identifier:
+        model_name = st.session_state.get('model_type', 'resemblyzer').upper()
         st.success(f"✅ {len(st.session_state.identifier.speaker_names)} speakers loaded")
+        st.info(f"🤖 Model: **{model_name}**")
         for speaker in st.session_state.identifier.speaker_names:
             st.write(f"• {speaker}")
     else:
@@ -280,8 +302,9 @@ else:
 
 # Footer
 st.markdown("---")
+model_info = st.session_state.get('model_type', 'resemblyzer').upper()
 st.markdown(
-    "<div style='text-align: center; color: #666;'>Built with Resemblyzer & Streamlit</div>",
+    f"<div style='text-align: center; color: #666;'>Built with {model_info}, Resemblyzer, Pyannote & Streamlit</div>",
     unsafe_allow_html=True
 )
 

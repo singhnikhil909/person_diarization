@@ -28,7 +28,7 @@ speaker_db.pkl
 *.pkl
 
 # Environment variables (keep .env.example if needed)
-.env
+.venv
 
 # Audio files (optional - uncomment if you don't want to track audio files)
 # *.wav
